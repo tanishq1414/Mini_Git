@@ -1,0 +1,41 @@
+blob
+#include "services/GraphService.h"
+#include "utils/Color.h"
+#include "utils/Hash.h"
+#include <sstream>
+#include <chrono>
+
+namespace minigit {
+
+std::string renderGraph(Repository& repo, int maxCommits) {
+    std::ostringstream out;
+    auto headHash = repo.refs().resolveHead();
+    if (headHash.empty()) {
+        out << "(no commits yet)\n";
+        return out.str();
+    }
+    bool c = Color::enabled();
+    std::string current = headHash;
+    int count = 0;
+    while (!current.empty() && count < maxCommits) {
+        Commit commit = repo.objectStore().loadCommit(current);
+        auto abbrev = Hash::abbreviate(current, 8);
+        // Graph line
+        out << (c ? Color::apply(Color::YELLOW, "* ") : "* ");
+        out << (c ? Color::apply(Color::YELLOW, abbrev) : abbrev);
+        out << " - ";
+        out << commit.message();
+        out << " ";
+        out << (c ? Color::apply(Color::GRAY, "("+ commit.author()+" <"+commit.email()+"> "+commit.timestamp()+")") 
+                  : "("+ commit.author()+" <"+commit.email()+"> "+commit.timestamp()+")");
+        out << "\n";
+        if (commit.parentHash().has_value())
+            current = *commit.parentHash();
+        else
+            break;
+        ++count;
+    }
+    return out.str();
+}
+
+} // namespace minigit

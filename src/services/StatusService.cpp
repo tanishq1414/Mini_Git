@@ -1,0 +1,109 @@
+#include "services/StatusService.h"
+#include "utils/Hash.h"
+#include "utils/FileSystem.h"
+#include <algorithm>
+
+namespace minigit {
+
+std::unordered_map<std::string,std::string> StatusService::workingTreeFiles(Repository& repo) {
+    std::unordered_map<std::string,std::string> result;
+    auto files = FileSystem::listFilesRecursive(repo.root(), [&](const std::filesystem::path& p){
+        return !repo.isIgnored(p);
+    });
+    for (auto& f : files) {
+        try {
+            auto rel = repo.toRepoRelative(f);
+            auto hash = Hash::sha256(FileSystem::readFile(f));
+            result[rel] = hash;
+        } catch (...) {}
+    }
+    return result;
+}
+
+RepoStatus StatusService::compute(Repository& repo) {
+    RepoStatus status;
+    status.currentBranch = repo.refs().currentBranch();
+    status.detached      = status.currentBranch.empty();
+
+    auto headHash = repo.refs().resolveHead();
+    status.hasCommits = !headHash.empty();
+
+    // HEAD tree
+    std::unordered_map<std::string,std::string> headFiles;
+    if (status.hasCommits) {
+        headFiles = repo.flattenTree(
+            repo.objectStore().loadCommit(headHash).treeHash());
+    }
+
+    // Index entries
+    auto& indexEntries = repo.index().entries();
+    // Working tree files
+    auto wtFiles = workingTreeFiles(repo);
+
+    // Collect all known paths
+    std::unordered_map<std::string, FileStatusEntry> allPaths;
+
+    auto getOrCreate = [&](const std::string& p) -> FileStatusEntry& {
+        auto it = allPaths.find(p);
+        if (it == allPaths.end()) {
+            FileStatusEntry e;
+            e.path = p;
+            e.workingTree = FileStatus::Unmodified;
+            e.stagingArea = FileStatus::Unmodified;
+            allPaths[p] = e;
+        }
+        return allPaths[p];
+    };
+
+    // Staging area: index vs HEAD
+    for (auto& [path, ie] : indexEntries) {
+        auto& e = getOrCreate(path);
+        if (ie.action == StagedAction::Delete) {
+            e.stagingArea = FileStatus::Deleted;
+        } else {
+            auto it = headFiles.find(path);
+            if (it == headFiles.end())
+                e.stagingArea = FileStatus::Staged; // New file staged
+            else if (it->second != ie.hash)
+                e.stagingArea = FileStatus::Modified; // Modified staged
+        }
+    }
+    // Head files not in index → deleted from staging
+    for (auto& [path, hash] : headFiles) {
+        if (!indexEntries.contains(path)) {
+            auto& e = getOrCreate(path);
+            e.stagingArea = FileStatus::Deleted;
+        }
+    }
+
+    // Working tree vs index
+    for (auto& [path, wtHash] : wtFiles) {
+        auto& e = getOrCreate(path);
+        auto ie = repo.index().getEntry(path);
+        if (!ie.has_value()) {
+            e.workingTree = FileStatus::Untracked;
+        } else if (ie->hash != wtHash) {
+            e.workingTree = FileStatus::Modified;
+        }
+    }
+    // Files in index but not in working tree
+    for (auto& [path, ie] : indexEntries) {
+        if (!wtFiles.contains(path)) {
+            auto& e = getOrCreate(path);
+            e.workingTree = FileStatus::Deleted;
+        }
+    }
+
+    for (auto& [path, e] : allPaths) {
+        if (e.workingTree != FileStatus::Unmodified ||
+            e.stagingArea != FileStatus::Unmodified)
+            status.entries.push_back(e);
+    }
+    std::sort(status.entries.begin(), status.entries.end(),
+              [](const FileStatusEntry& a, const FileStatusEntry& b){
+                  return a.path < b.path;
+              });
+    return status;
+}
+
+} // namespace minigit

@@ -1,0 +1,9 @@
+blob
+# MiniGit ignore file
+build
+.git
+.vs
+.vscode
+*.obj
+*.exe
+*.tmp

@@ -1,0 +1,45 @@
+#include "commands/Commands.h"
+#include "core/Repository.h"
+#include "utils/Color.h"
+#include "utils/Hash.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+
+namespace minigit {
+
+int cmd_log(const ParsedArgs& args) {
+    try {
+        auto repo = Repository::open();
+        auto headHash = repo.refs().resolveHead();
+        if (headHash.empty()) {
+            std::cout << Color::yellow("No commits yet.\n");
+            return 0;
+        }
+        int limit = 100;
+        if (args.options.count("n"))
+            limit = std::stoi(args.options.at("n"));
+
+        std::string current = headHash;
+        int count = 0;
+        while (!current.empty() && count < limit) {
+            auto commit = repo.objectStore().loadCommit(current);
+            std::cout << Color::boldYellow("commit ") << Color::yellow(current) << "\n";
+            if (commit.parentHash().has_value())
+                std::cout << Color::gray("parent " + *commit.parentHash()) << "\n";
+            std::cout << Color::bold("Author: ") << commit.author() << " <" << commit.email() << ">\n";
+            std::cout << Color::bold("Date:   ") << commit.timestamp() << "\n";
+            std::cout << "\n    " << commit.message() << "\n\n";
+            if (commit.parentHash().has_value())
+                current = *commit.parentHash();
+            else
+                break;
+            ++count;
+        }
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

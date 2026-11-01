@@ -1,0 +1,58 @@
+#include "commands/Commands.h"
+#include "core/Repository.h"
+#include "services/DiffService.h"
+#include "utils/Color.h"
+#include "utils/FileSystem.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+
+namespace minigit {
+
+int cmd_diff(const ParsedArgs& args) {
+    try {
+        auto repo = Repository::open();
+        bool staged = args.options.contains("staged") || args.options.contains("cached");
+
+        if (staged) {
+            // Index vs HEAD
+            auto headHash = repo.refs().resolveHead();
+            std::unordered_map<std::string,std::string> headFiles;
+            if (!headHash.empty()) {
+                auto commit = repo.objectStore().loadCommit(headHash);
+                headFiles = repo.flattenTree(commit.treeHash());
+            }
+            for (auto& [path, ie] : repo.index().entries()) {
+                std::string oldContent;
+                auto it = headFiles.find(path);
+                if (it != headFiles.end())
+                    oldContent = repo.objectStore().loadBlob(it->second).content();
+                std::string newContent = repo.objectStore().loadBlob(ie.hash).content();
+                if (oldContent == newContent) continue;
+                auto d = diffTexts(path, path, oldContent, newContent);
+                std::cout << formatDiff(d, Color::enabled());
+            }
+        } else {
+            // Working tree vs index
+            auto& idx = repo.index();
+            auto filter = [&](const std::filesystem::path& p){ return !repo.isIgnored(p); };
+            auto files = FileSystem::listFilesRecursive(repo.root(), filter);
+            for (auto& f : files) {
+                std::string rel;
+                try { rel = repo.toRepoRelative(f); } catch (...) { continue; }
+                auto ie = idx.getEntry(rel);
+                if (!ie.has_value()) continue; // untracked
+                auto oldContent = repo.objectStore().loadBlob(ie->hash).content();
+                auto newContent = FileSystem::readFile(f);
+                if (oldContent == newContent) continue;
+                auto d = diffTexts(rel, rel, oldContent, newContent);
+                std::cout << formatDiff(d, Color::enabled());
+            }
+        }
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

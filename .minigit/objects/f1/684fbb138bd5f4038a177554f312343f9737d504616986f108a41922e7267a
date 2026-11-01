@@ -1,0 +1,52 @@
+blob
+#include "core/Tree.h"
+#include "core/Object.h"
+#include <nlohmann/json.hpp>
+#include <algorithm>
+
+namespace minigit {
+
+using json = nlohmann::json;
+
+Tree::Tree(std::vector<TreeEntry> entries) : m_entries(std::move(entries)) {}
+
+void Tree::addEntry(TreeEntry entry) {
+    m_entries.push_back(std::move(entry));
+}
+
+const TreeEntry* Tree::findEntry(const std::string& name) const {
+    for (auto& e : m_entries)
+        if (e.name == name) return &e;
+    return nullptr;
+}
+
+std::string Tree::serialize() const {
+    json j = json::array();
+    for (auto& e : m_entries) {
+        j.push_back({
+            {"name", e.name},
+            {"hash", e.hash},
+            {"type", objectTypeName(e.type)},
+            {"mode", e.mode}
+        });
+    }
+    return "tree\n" + j.dump();
+}
+
+Tree Tree::deserialize(const std::string& data) {
+    auto pos = data.find('\n');
+    if (pos == std::string::npos) return Tree{};
+    auto j = json::parse(data.substr(pos + 1));
+    std::vector<TreeEntry> entries;
+    for (auto& item : j) {
+        TreeEntry e;
+        e.name = item["name"].get<std::string>();
+        e.hash = item["hash"].get<std::string>();
+        e.type = objectTypeFromName(item["type"].get<std::string>());
+        e.mode = item["mode"].get<int>();
+        entries.push_back(std::move(e));
+    }
+    return Tree(std::move(entries));
+}
+
+} // namespace minigit

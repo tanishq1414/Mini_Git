@@ -1,0 +1,344 @@
+[
+  {
+    "action": "add",
+    "hash": "b6b926a6c11c502b722b3b8aefba85b12c7ca5dacd6d578317cf33731e30b281",
+    "mode": 100644,
+    "path": "include/core/Commit.h"
+  },
+  {
+    "action": "add",
+    "hash": "a92c64f327893900a6c12a7e1c50db9ab30562b1e104af726b33b3065473e49f",
+    "mode": 100644,
+    "path": "src/utils/Hash.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "1c47eee84478116fc900b1c98e01b3244ff34182da19f70c71672586f73f9d4e",
+    "mode": 100644,
+    "path": "include/core/Object.h"
+  },
+  {
+    "action": "add",
+    "hash": "f89c30b3c41a9cf41b92bf306f09b998d57f6a63e5670d21a4bf5590bb9ebeda",
+    "mode": 100644,
+    "path": "include/core/ObjectStore.h"
+  },
+  {
+    "action": "add",
+    "hash": "99abd643f31cccf898ee3bcc4f921fbb3db01a2a83a9216d0b03932231a6f9de",
+    "mode": 100644,
+    "path": "include/core/Blob.h"
+  },
+  {
+    "action": "add",
+    "hash": "351eed5bdb5323377f00eede8f06a42fda7aecf1b07b3aa342d295eb29a7bd2a",
+    "mode": 100644,
+    "path": "src/commands/BranchCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "9df55925c39aca61f1f194cec20e63a2fae1c4837d5673928ede3ce87c99d90c",
+    "mode": 100644,
+    "path": "src/core/Blob.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "f1a3939c23f45ecde20a1135080bcc9b5f45932452cff3cc6abf955ff4591964",
+    "mode": 100644,
+    "path": "src/commands/DiffCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "63995bb493f51c5dbf893d687dd7e616547af694d6ff2f27ba0ac6f046908301",
+    "mode": 100644,
+    "path": "src/core/Object.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "8d931accc2b59ffe89cdcab5c125bd49a551c532480a4a379f919d37983056ac",
+    "mode": 100644,
+    "path": "src/commands/GraphCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "67be024ba5e5313ebb04d4040bc6bc9cae0586982eaf8406784f2940f2f8545f",
+    "mode": 100644,
+    "path": "src/commands/InitCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "0bbefc2b3c823f903b50aa981eb229f21aef59812224a027ae0680d8b80e38f9",
+    "mode": 100644,
+    "path": "src/commands/ResetCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "d8a9b2e83bbc2b18fb445354075be2935856482933c1e510099235e306eacc44",
+    "mode": 100644,
+    "path": "src/cli/CommandDispatcher.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "e840ee38fabf25d2087a64cc58b0759c428bbe80244087d338fe87e1ee99a1dd",
+    "mode": 100644,
+    "path": "include/services/StatusService.h"
+  },
+  {
+    "action": "add",
+    "hash": "fb1a339b2019f0f054c8560c9a74cecd85fc22b3da8087fd80715451c6b5b0c9",
+    "mode": 100644,
+    "path": ".gitignore"
+  },
+  {
+    "action": "add",
+    "hash": "9aee67468cf8c46111e2824d2774da0a98858a7bb0e4a851fa0049a9ec63bd50",
+    "mode": 100644,
+    "path": "src/utils/Color.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "ca4e83c4d7638c4b20389a74c5ae7a0bb6c7a352d2e29de651439c76b2f33095",
+    "mode": 100644,
+    "path": "src/core/Repository.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "cf26cf4fffe7bb135b58298fc5433dca411b90ec00d9af13f8132fbd1e102c89",
+    "mode": 100644,
+    "path": "src/commands/RemoveCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "a69ae2670049130691830e09b1aae55ecc4d99d9eb954c66f80e4af019feb8af",
+    "mode": 100644,
+    "path": "src/utils/Config.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "3b615ebb928853e1ffd144e45debfed1e665b23c720c3da64ed563ed712a5f68",
+    "mode": 100644,
+    "path": "src/services/StatusService.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "154b67b1ba28ffce984a2168325b476c5ce0ad5249dcbf1c149e02cd5b0236a8",
+    "mode": 100644,
+    "path": "src/main.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "441273076e6f5fe353249e49eb09a001fa888481ff25be651da798c7b30e07cf",
+    "mode": 100644,
+    "path": "src/commands/CommitCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "6bf29c4fe1edfa45c0481faa523b557b02499a98acf5642b4d06734601f426a2",
+    "mode": 100644,
+    "path": "src/core/Index.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "f1684fbb138bd5f4038a177554f312343f9737d504616986f108a41922e7267a",
+    "mode": 100644,
+    "path": "src/core/Tree.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "13dd6bafdfab3e81db965864f483a85257eb3e0e13840bb070cc509b0cd5d436",
+    "mode": 100644,
+    "path": "src/commands/RestoreCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "7fe6bf7b17b346b54e8ddeed175b56f7eed09a7858a51a0cd695bcf9e868b74c",
+    "mode": 100644,
+    "path": "src/utils/FileSystem.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "67505071bc44fe2b4f69d693c51907483d19633862f9b25665b64c183b33da9b",
+    "mode": 100644,
+    "path": "src/core/Reference.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "6ac39d64c7b456628da08f995425a3cad8dcc0d3eb2758269c67be14442ab505",
+    "mode": 100644,
+    "path": "src/commands/StatusCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "9f6d66779d86aeec03ed61f5e0ea07dbd38eb1655141c1374c202155d7fe5a38",
+    "mode": 100644,
+    "path": "include/commands/Commands.h"
+  },
+  {
+    "action": "add",
+    "hash": "db63a91891b73480360ca72352080417f9a3c69a951f0f30e597c20b22605e5a",
+    "mode": 100644,
+    "path": "src/commands/LogCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "3dcd69dbeb39033ec24ac8f37bff7582f890b7f9c074d3cd35e518b4ab1dde39",
+    "mode": 100644,
+    "path": "include/utils/Exceptions.h"
+  },
+  {
+    "action": "add",
+    "hash": "08a540f738af935433c1be79e6ce6e33641f37393a0f46a22ad0264f2fe8321a",
+    "mode": 100644,
+    "path": "include/cli/CommandDispatcher.h"
+  },
+  {
+    "action": "add",
+    "hash": "08c5b6653b29fea0b25acfdbd551e3fc7ba22d3bf6e1ec259ee189efa5516d4b",
+    "mode": 100644,
+    "path": "src/core/ObjectStore.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "c34a51f4ca8dbf5d98bf2b1f45fec3fd07f2c56e63af63f64d4e8dc3818a4c6e",
+    "mode": 100644,
+    "path": "include/utils/Config.h"
+  },
+  {
+    "action": "add",
+    "hash": "f43cba19120568fcca3f5b0ca8ba5e2d9afbef5bf88439b83097f872f8813913",
+    "mode": 100644,
+    "path": "src/commands/AddCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "02d279bd04e37c22e461a60aec03f2222a7d8cd6cd8152724d516acae76a848c",
+    "mode": 100644,
+    "path": "README.md"
+  },
+  {
+    "action": "add",
+    "hash": "066d69c7d7c62663a6b1d17074f1fe53a65d51713ebdf93a9f6aa913a6358c3b",
+    "mode": 100644,
+    "path": "include/core/Index.h"
+  },
+  {
+    "action": "add",
+    "hash": "6f8107ba678faede7e451d9c5b44b17ad81bd83f2f885d422dd1446bba161475",
+    "mode": 100644,
+    "path": "include/core/Repository.h"
+  },
+  {
+    "action": "add",
+    "hash": "a3cfd97a7397a5156abdd999a97d1d9793f9621264f241c7ec8ad6b672de44e7",
+    "mode": 100644,
+    "path": "include/utils/FileSystem.h"
+  },
+  {
+    "action": "add",
+    "hash": "6ada75a042e19360b9cfe90f93217e5ed9a648573d0392f1561904d3dd1ece34",
+    "mode": 100644,
+    "path": "CMakeLists.txt"
+  },
+  {
+    "action": "add",
+    "hash": "c03c6e95d14392174a62ea522cc142fe87963d3b780c441455347fbad80530a3",
+    "mode": 100644,
+    "path": "include/core/Reference.h"
+  },
+  {
+    "action": "add",
+    "hash": "2b72fd2a9462f47c29cf89042280388a154d9781e3b6039e44b1f09acdfd130b",
+    "mode": 100644,
+    "path": "run_demo.ps1"
+  },
+  {
+    "action": "add",
+    "hash": "b8f945c35bf1400947face040540a1c68c0709c4f05f6ba085b3f90ee57ec7ba",
+    "mode": 100644,
+    "path": "src/cli/CLIParser.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "b49623bfe0235d5d7ebdbe87d69dd2a18fc5ee948f6f788d85881944599dfbe5",
+    "mode": 100644,
+    "path": "include/services/DiffService.h"
+  },
+  {
+    "action": "add",
+    "hash": "118fa444621d42b396e9a1b5832a8b998fcd8d29784f7032e20e3a2497ce2519",
+    "mode": 100644,
+    "path": "include/utils/Color.h"
+  },
+  {
+    "action": "add",
+    "hash": "bbf674340e37e0d7eb15af9007b75a982548a41838a53ae0cc1afda96fc2dce3",
+    "mode": 100644,
+    "path": "src/cli/Help.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "e47c2f8244d18bcf5db2d74ceb9600d478956aa82ce3954c71b66795fc501070",
+    "mode": 100644,
+    "path": "src/core/Commit.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "57baa2d2a7211e988cd27894b848725d908f74b579ced299b08572835b735068",
+    "mode": 100644,
+    "path": "src/commands/ShowCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "0437b0dc66b8fedadceb80c03f915768671bbd44d4cac00f5fd318719647e158",
+    "mode": 100644,
+    "path": "include/cli/Help.h"
+  },
+  {
+    "action": "add",
+    "hash": "52d1394f884ea962808799f5676b420bf2d0ba10a1a27a584bce927b0ed9cbde",
+    "mode": 100644,
+    "path": "include/services/GraphService.h"
+  },
+  {
+    "action": "add",
+    "hash": "d6dbc584399c27efdef4cdc2838b9221c1269928b2d179667907d9060d76ce9b",
+    "mode": 100644,
+    "path": "include/utils/Hash.h"
+  },
+  {
+    "action": "add",
+    "hash": "652229773cb21f4f5992d1322e9e437962a295cf299f87ab59aac59e15e19734",
+    "mode": 100644,
+    "path": "src/services/DiffService.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "38aa31de8126d41a54466d55ef35896c0505a28d3c5f5802faa5013e6a816e81",
+    "mode": 100644,
+    "path": "include/cli/CLIParser.h"
+  },
+  {
+    "action": "add",
+    "hash": "85b4a51554290e3f935f937118aaa3159f6a8c1dbcc116cb2d40a75ee2fd7fcb",
+    "mode": 100644,
+    "path": "src/services/GraphService.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "b155eccc52ecaba41938c18663e23fcaeb9bed6b1e204a91aa69166eef2ee997",
+    "mode": 100644,
+    "path": "src/commands/CheckoutCommand.cpp"
+  },
+  {
+    "action": "add",
+    "hash": "655634de47c50e37e451ae8b0f0ce3eb3aabc3ed56050899097685c6ff5edb06",
+    "mode": 100644,
+    "path": "include/core/Tree.h"
+  },
+  {
+    "action": "add",
+    "hash": "72f3415e93b247de109344fd854af7f24cebb6d8e59ad177ac0e135ca1646c41",
+    "mode": 100644,
+    "path": ".minigitignore"
+  }
+]

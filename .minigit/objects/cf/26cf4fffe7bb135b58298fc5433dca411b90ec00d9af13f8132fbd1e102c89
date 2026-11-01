@@ -1,0 +1,54 @@
+blob
+#include "commands/Commands.h"
+#include "core/Repository.h"
+#include "utils/Color.h"
+#include "utils/Exceptions.h"
+#include "utils/FileSystem.h"
+#include <iostream>
+#include <filesystem>
+
+namespace minigit {
+
+int cmd_rm(const ParsedArgs& args) {
+    try {
+        auto repo = Repository::open();
+        if (args.positional.empty()) {
+            std::cerr << Color::boldRed("error: ") << "specify file(s) to remove\n";
+            return 1;
+        }
+        bool cachedOnly = args.options.contains("cached");
+
+        for (auto& arg : args.positional) {
+            std::string rel;
+            try { rel = repo.toRepoRelative(arg); } catch (...) {
+                std::cerr << Color::boldRed("error: ") << "'" << arg << "' outside repo\n";
+                continue;
+            }
+            if (!repo.index().hasEntry(rel)) {
+                std::cerr << Color::boldRed("error: ") << "'" << rel << "' not tracked\n";
+                continue;
+            }
+            // Mark as deleted in index
+            IndexEntry ie;
+            ie.path   = rel;
+            ie.hash   = "";
+            ie.mode   = 0;
+            ie.action = StagedAction::Delete;
+            repo.index().addEntry(ie);
+
+            if (!cachedOnly) {
+                auto absPath = repo.toAbsolute(rel);
+                if (std::filesystem::exists(absPath))
+                    std::filesystem::remove(absPath);
+            }
+            std::cout << Color::boldRed("rm ") << rel << "\n";
+        }
+        repo.index().save();
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

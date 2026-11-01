@@ -1,0 +1,50 @@
+blob
+#pragma once
+#include <filesystem>
+#include <string>
+#include <vector>
+#include <functional>
+
+namespace minigit {
+
+/// Filesystem helper utilities.
+class FileSystem {
+public:
+    /// Read entire file as string. Throws on error.
+    static std::string readFile(const std::filesystem::path& path);
+
+    /// Read entire file as bytes. Throws on error.
+    static std::vector<uint8_t> readFileBytes(const std::filesystem::path& path);
+
+    /// Atomically write string to file (write temp, rename). Throws on error.
+    static void writeFileAtomic(const std::filesystem::path& path,
+                                const std::string& content);
+
+    /// Write raw bytes atomically.
+    static void writeFileBytesAtomic(const std::filesystem::path& path,
+                                     const std::vector<uint8_t>& data);
+
+    /// Ensure directory exists (create_directories).
+    static void ensureDir(const std::filesystem::path& path);
+
+    /// List all files recursively under root, returns relative paths.
+    static std::vector<std::filesystem::path> listFilesRecursive(
+        const std::filesystem::path& root,
+        const std::function<bool(const std::filesystem::path&)>& filter = nullptr);
+
+    /// Returns true if path is inside (is a subpath of) root.
+    static bool isInsideDirectory(const std::filesystem::path& path,
+                                  const std::filesystem::path& root);
+
+    /// Normalize path: make absolute and lexically normal.
+    static std::filesystem::path normalize(const std::filesystem::path& path);
+
+    /// Compute path relative to base (throws if not relative).
+    static std::filesystem::path makeRelative(const std::filesystem::path& path,
+                                              const std::filesystem::path& base);
+
+    /// Split lines (preserving empty lines).
+    static std::vector<std::string> splitLines(const std::string& content);
+};
+
+} // namespace minigit

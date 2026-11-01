@@ -1,0 +1,24 @@
+blob
+#pragma once
+#include <string>
+#include <vector>
+#include <unordered_map>
+
+namespace minigit {
+
+/// Parsed result from command line.
+struct ParsedArgs {
+    std::string                              command;
+    std::vector<std::string>                 positional;
+    std::unordered_map<std::string, std::string> options; ///< --key=value or --flag
+    bool                                     noColor = false;
+    bool                                     help    = false;
+};
+
+/// Parses argv into ParsedArgs.
+class CLIParser {
+public:
+    static ParsedArgs parse(int argc, char* argv[]);
+};
+
+} // namespace minigit

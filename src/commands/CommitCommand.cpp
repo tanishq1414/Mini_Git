@@ -1,0 +1,81 @@
+#include "commands/Commands.h"
+#include "core/Repository.h"
+#include "utils/Color.h"
+#include "utils/Hash.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+#include <chrono>
+#include <ctime>
+#include <iomanip>
+#include <sstream>
+
+namespace minigit {
+
+static std::string currentTimestamp() {
+    auto now = std::chrono::system_clock::now();
+    auto t   = std::chrono::system_clock::to_time_t(now);
+    std::ostringstream oss;
+    oss << std::put_time(std::gmtime(&t), "%Y-%m-%dT%H:%M:%SZ");
+    return oss.str();
+}
+
+int cmd_commit(const ParsedArgs& args) {
+    try {
+        auto repo = Repository::open();
+
+        auto msg = args.options.count("m") ? args.options.at("m") : "";
+        if (msg.empty()) {
+            std::cerr << Color::boldRed("error: ") << "commit message required (-m <message>)\n";
+            return 1;
+        }
+
+        // Check if there is anything staged
+        auto& idx = repo.index();
+        if (idx.entries().empty()) {
+            std::cout << Color::yellow("nothing to commit (use 'minigit add' to stage files)\n");
+            return 0;
+        }
+
+        // Build tree from index
+        auto treeHash = repo.buildAndStoreTree("");
+
+        // Get parent
+        auto parentHash = repo.refs().resolveHead();
+        std::optional<std::string> parentOpt;
+        if (!parentHash.empty()) parentOpt = parentHash;
+
+        auto& cfg = repo.config();
+        Commit commit(
+            treeHash,
+            parentOpt,
+            cfg.getAuthorName(),
+            cfg.getAuthorEmail(),
+            currentTimestamp(),
+            msg
+        );
+        auto commitHash = repo.objectStore().store(commit);
+        repo.refs().advanceBranch(commitHash);
+
+        // After commit, update index to match new tree (committed state)
+        std::unordered_map<std::string,IndexEntry> committed;
+        for (auto& [path, ie] : idx.entries()) {
+            if (ie.action != StagedAction::Delete)
+                committed[path] = ie;
+        }
+        idx.commit(committed);
+        idx.save();
+
+        auto branch = repo.refs().currentBranch();
+        std::cout << Color::boldGreen("[")
+                  << Color::boldCyan(branch.empty() ? "(detached)" : branch)
+                  << Color::boldGreen("] ")
+                  << msg << "\n"
+                  << Color::gray(Hash::abbreviate(commitHash, 8)) << "\n";
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

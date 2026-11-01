@@ -1,0 +1,23 @@
+#include "core/Blob.h"
+#include <algorithm>
+
+namespace minigit {
+
+Blob::Blob(std::string content) : m_content(std::move(content)) {}
+
+Blob::Blob(std::vector<uint8_t> bytes)
+    : m_content(reinterpret_cast<const char*>(bytes.data()), bytes.size()) {}
+
+std::string Blob::serialize() const {
+    // Format: "blob\n<content>"
+    return "blob\n" + m_content;
+}
+
+Blob Blob::deserialize(const std::string& data) {
+    auto pos = data.find('\n');
+    if (pos == std::string::npos)
+        return Blob("");
+    return Blob(data.substr(pos + 1));
+}
+
+} // namespace minigit

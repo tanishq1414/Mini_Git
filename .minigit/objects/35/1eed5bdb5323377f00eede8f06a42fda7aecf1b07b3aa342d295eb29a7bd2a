@@ -1,0 +1,67 @@
+blob
+#include "commands/Commands.h"
+#include "core/Repository.h"
+#include "utils/Color.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+
+namespace minigit {
+
+int cmd_branch(const ParsedArgs& args) {
+    try {
+        auto repo = Repository::open();
+        bool del  = args.options.contains("d") || args.options.contains("D");
+
+        if (args.positional.empty()) {
+            // List branches
+            auto branches = repo.refs().listBranches();
+            auto current  = repo.refs().currentBranch();
+            if (branches.empty()) {
+                std::cout << Color::gray("(no branches)\n");
+                return 0;
+            }
+            for (auto& b : branches) {
+                if (b == current)
+                    std::cout << Color::boldGreen("* ") << Color::boldGreen(b) << "\n";
+                else
+                    std::cout << "  " << b << "\n";
+            }
+            return 0;
+        }
+
+        auto branchName = args.positional[0];
+
+        if (del) {
+            if (!repo.refs().branchExists(branchName)) {
+                std::cerr << Color::boldRed("error: ") << "branch '" << branchName << "' not found\n";
+                return 1;
+            }
+            if (branchName == repo.refs().currentBranch()) {
+                std::cerr << Color::boldRed("error: ") << "cannot delete current branch\n";
+                return 1;
+            }
+            repo.refs().deleteBranch(branchName);
+            std::cout << Color::boldRed("deleted ") << "branch " << branchName << "\n";
+            return 0;
+        }
+
+        // Create branch
+        if (repo.refs().branchExists(branchName)) {
+            std::cerr << Color::boldRed("error: ") << "branch '" << branchName << "' already exists\n";
+            return 1;
+        }
+        auto headHash = repo.refs().resolveHead();
+        if (headHash.empty()) headHash = "";
+        if (!headHash.empty())
+            repo.refs().writeBranch(branchName, headHash);
+        else
+            repo.refs().writeBranch(branchName, "");
+        std::cout << Color::boldGreen("created ") << "branch " << Color::boldCyan(branchName) << "\n";
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

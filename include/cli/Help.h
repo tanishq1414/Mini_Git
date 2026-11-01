@@ -1,0 +1,9 @@
+#pragma once
+#include <string>
+
+namespace minigit {
+
+void printGeneralHelp();
+void printCommandHelp(const std::string& command);
+
+} // namespace minigit

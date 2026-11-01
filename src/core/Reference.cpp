@@ -1,0 +1,96 @@
+#include "core/Reference.h"
+#include "utils/FileSystem.h"
+#include <fstream>
+#include <algorithm>
+
+namespace minigit {
+
+Reference::Reference(const std::filesystem::path& minigitDir)
+    : m_minigitDir(minigitDir) {}
+
+std::filesystem::path Reference::headsDir() const {
+    return m_minigitDir / "refs" / "heads";
+}
+
+std::filesystem::path Reference::branchPath(const std::string& branch) const {
+    return headsDir() / branch;
+}
+
+std::string Reference::readHead() const {
+    auto headFile = m_minigitDir / "HEAD";
+    if (!std::filesystem::exists(headFile)) return "";
+    auto content = FileSystem::readFile(headFile);
+    while (!content.empty() && (content.back() == '\n' || content.back() == '\r'))
+        content.pop_back();
+    return content;
+}
+
+bool Reference::isSymbolicHead() const {
+    return readHead().starts_with("ref: ");
+}
+
+std::string Reference::currentBranch() const {
+    auto h = readHead();
+    if (h.starts_with("ref: refs/heads/"))
+        return h.substr(std::string("ref: refs/heads/").size());
+    return "";
+}
+
+std::string Reference::resolveHead() const {
+    auto h = readHead();
+    if (h.starts_with("ref: refs/heads/")) {
+        auto branch = h.substr(std::string("ref: refs/heads/").size());
+        return readBranch(branch);
+    }
+    return h; // detached
+}
+
+std::string Reference::readBranch(const std::string& branch) const {
+    auto p = branchPath(branch);
+    if (!std::filesystem::exists(p)) return "";
+    auto content = FileSystem::readFile(p);
+    while (!content.empty() && (content.back() == '\n' || content.back() == '\r'))
+        content.pop_back();
+    return content;
+}
+
+void Reference::writeBranch(const std::string& branch, const std::string& commitHash) {
+    FileSystem::ensureDir(headsDir());
+    FileSystem::writeFileAtomic(branchPath(branch), commitHash + "\n");
+}
+
+void Reference::setHead(const std::string& branch) {
+    FileSystem::writeFileAtomic(m_minigitDir / "HEAD",
+                                "ref: refs/heads/" + branch + "\n");
+}
+
+void Reference::setDetachedHead(const std::string& commitHash) {
+    FileSystem::writeFileAtomic(m_minigitDir / "HEAD", commitHash + "\n");
+}
+
+std::vector<std::string> Reference::listBranches() const {
+    std::vector<std::string> result;
+    if (!std::filesystem::exists(headsDir())) return result;
+    for (auto& e : std::filesystem::directory_iterator(headsDir()))
+        if (e.is_regular_file())
+            result.push_back(e.path().filename().string());
+    std::sort(result.begin(), result.end());
+    return result;
+}
+
+bool Reference::branchExists(const std::string& branch) const {
+    return std::filesystem::exists(branchPath(branch));
+}
+
+void Reference::deleteBranch(const std::string& branch) {
+    std::filesystem::remove(branchPath(branch));
+}
+
+void Reference::advanceBranch(const std::string& commitHash) {
+    auto branch = currentBranch();
+    if (!branch.empty())
+        writeBranch(branch, commitHash);
+    // else detached HEAD, nothing to advance
+}
+
+} // namespace minigit

@@ -1,0 +1,9 @@
+commit
+{
+  "author": "Unknown",
+  "email": "unknown@example.com",
+  "message": "Initial commit",
+  "parent": null,
+  "timestamp": "2026-11-01T10:52:13Z",
+  "tree": "42ab8eee4f3d36edc260465c5be41fa3ec37ada60c85263800334a978bc15103"
+}

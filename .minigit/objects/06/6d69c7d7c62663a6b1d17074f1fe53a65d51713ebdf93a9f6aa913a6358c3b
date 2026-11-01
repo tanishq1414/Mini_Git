@@ -1,0 +1,63 @@
+blob
+#pragma once
+#include <filesystem>
+#include <string>
+#include <unordered_map>
+#include <vector>
+#include <optional>
+
+namespace minigit {
+
+/// Type of change for a staged entry.
+enum class StagedAction {
+    Add,    ///< File newly added or modified
+    Delete  ///< File removed
+};
+
+/// A single entry in the staging index.
+struct IndexEntry {
+    std::string  path;          ///< Relative path from repo root (forward slashes)
+    std::string  hash;          ///< SHA-256 of the staged blob
+    int          mode = 100644; ///< File mode
+    StagedAction action = StagedAction::Add;
+};
+
+/// The staging area stored in .minigit/index (JSON).
+class Index {
+public:
+    explicit Index(const std::filesystem::path& indexPath);
+
+    /// Load index from disk.
+    void load();
+
+    /// Save index to disk.
+    void save() const;
+
+    /// Add or update an entry.
+    void addEntry(IndexEntry entry);
+
+    /// Remove an entry by path. Returns false if not present.
+    bool removeEntry(const std::string& path);
+
+    /// Get entry by path. Returns nullopt if not present.
+    std::optional<IndexEntry> getEntry(const std::string& path) const;
+
+    /// Check if path is staged.
+    bool hasEntry(const std::string& path) const;
+
+    /// All current entries.
+    const std::unordered_map<std::string, IndexEntry>& entries() const { return m_entries; }
+
+    /// Clear all entries.
+    void clear();
+
+    /// Remove entries that were committed (replace with committed state).
+    /// After commit, all Add/Delete entries are removed (index matches HEAD tree).
+    void commit(const std::unordered_map<std::string, IndexEntry>& committedEntries);
+
+private:
+    std::filesystem::path m_path;
+    std::unordered_map<std::string, IndexEntry> m_entries;
+};
+
+} // namespace minigit

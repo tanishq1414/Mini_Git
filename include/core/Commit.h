@@ -1,0 +1,41 @@
+#pragma once
+#include "core/Object.h"
+#include <string>
+#include <optional>
+
+namespace minigit {
+
+/// Commit: stores tree, parent, author, timestamp, message.
+class Commit : public Object {
+public:
+    Commit() = default;
+    Commit(std::string treeHash,
+           std::optional<std::string> parentHash,
+           std::string author,
+           std::string email,
+           std::string timestamp,
+           std::string message);
+
+    ObjectType type() const override { return ObjectType::Commit; }
+    std::string serialize() const override;
+
+    const std::string& treeHash()   const { return m_treeHash; }
+    const std::optional<std::string>& parentHash() const { return m_parentHash; }
+    const std::string& author()     const { return m_author; }
+    const std::string& email()      const { return m_email; }
+    const std::string& timestamp()  const { return m_timestamp; }
+    const std::string& message()    const { return m_message; }
+
+    /// Deserialize from stored format.
+    static Commit deserialize(const std::string& data);
+
+private:
+    std::string m_treeHash;
+    std::optional<std::string> m_parentHash;
+    std::string m_author;
+    std::string m_email;
+    std::string m_timestamp;
+    std::string m_message;
+};
+
+} // namespace minigit

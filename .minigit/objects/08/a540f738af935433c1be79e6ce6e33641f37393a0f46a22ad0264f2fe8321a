@@ -1,0 +1,11 @@
+blob
+#pragma once
+#include "cli/CLIParser.h"
+
+namespace minigit {
+
+/// Dispatches a parsed command to its handler.
+/// Returns exit code (0 = success).
+int dispatchCommand(const ParsedArgs& args);
+
+} // namespace minigit

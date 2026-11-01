@@ -1,0 +1,64 @@
+blob
+#include "commands/Commands.h"
+#include "core/Repository.h"
+#include "utils/Color.h"
+#include "utils/FileSystem.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+
+namespace minigit {
+
+int cmd_restore(const ParsedArgs& args) {
+    try {
+        auto repo = Repository::open();
+        if (args.positional.empty()) {
+            std::cerr << Color::boldRed("error: ") << "specify file(s) to restore\n";
+            return 1;
+        }
+        bool staged = args.options.contains("staged");
+
+        for (auto& arg : args.positional) {
+            std::string rel;
+            try { rel = repo.toRepoRelative(arg); } catch (...) {
+                std::cerr << Color::boldRed("error: ") << "'" << arg << "' outside repo\n";
+                continue;
+            }
+            if (staged) {
+                // Restore index from HEAD
+                auto headHash = repo.refs().resolveHead();
+                if (headHash.empty()) {
+                    std::cerr << Color::boldRed("error: ") << "no commits to restore from\n";
+                    return 1;
+                }
+                auto headFiles = repo.flattenTree(
+                    repo.objectStore().loadCommit(headHash).treeHash());
+                auto it = headFiles.find(rel);
+                if (it == headFiles.end()) {
+                    repo.index().removeEntry(rel);
+                } else {
+                    IndexEntry ie;
+                    ie.path = rel; ie.hash = it->second; ie.mode = 100644;
+                    repo.index().addEntry(ie);
+                }
+                repo.index().save();
+                std::cout << Color::boldGreen("restored (staged) ") << rel << "\n";
+            } else {
+                // Restore working tree from index
+                auto ie = repo.index().getEntry(rel);
+                if (!ie.has_value()) {
+                    std::cerr << Color::boldRed("error: ") << "'" << rel << "' not in index\n";
+                    continue;
+                }
+                auto content = repo.objectStore().loadBlob(ie->hash).content();
+                FileSystem::writeFileAtomic(repo.toAbsolute(rel), content);
+                std::cout << Color::boldGreen("restored ") << rel << "\n";
+            }
+        }
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

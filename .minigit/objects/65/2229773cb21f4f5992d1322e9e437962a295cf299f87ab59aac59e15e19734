@@ -1,0 +1,137 @@
+blob
+#include "services/DiffService.h"
+#include "utils/Color.h"
+#include "utils/FileSystem.h"
+#include <algorithm>
+#include <sstream>
+
+namespace minigit {
+
+// LCS-based diff using dynamic programming
+FileDiff diffTexts(const std::string& oldPath, const std::string& newPath,
+                   const std::string& oldContent, const std::string& newContent)
+{
+    FileDiff diff;
+    diff.oldPath = oldPath;
+    diff.newPath = newPath;
+
+    auto oldLines = FileSystem::splitLines(oldContent);
+    auto newLines = FileSystem::splitLines(newContent);
+    int M = (int)oldLines.size();
+    int N = (int)newLines.size();
+
+    // LCS table
+    std::vector<std::vector<int>> dp(M+1, std::vector<int>(N+1, 0));
+    for (int i = M-1; i >= 0; --i)
+        for (int j = N-1; j >= 0; --j)
+            dp[i][j] = (oldLines[i] == newLines[j])
+                ? dp[i+1][j+1]+1
+                : std::max(dp[i+1][j], dp[i][j+1]);
+
+    // Traceback
+    struct RawLine { DiffLine::Kind kind; std::string text; int oi; int ni; };
+    std::vector<RawLine> raw;
+    int i=0, j=0;
+    while (i < M && j < N) {
+        if (oldLines[i] == newLines[j]) {
+            raw.push_back({DiffLine::Kind::Context, oldLines[i], i, j});
+            ++i; ++j;
+        } else if (dp[i+1][j] >= dp[i][j+1]) {
+            raw.push_back({DiffLine::Kind::Removed, oldLines[i], i, -1});
+            ++i;
+        } else {
+            raw.push_back({DiffLine::Kind::Added, newLines[j], -1, j});
+            ++j;
+        }
+    }
+    while (i < M) { raw.push_back({DiffLine::Kind::Removed, oldLines[i], i, -1}); ++i; }
+    while (j < N) { raw.push_back({DiffLine::Kind::Added,   newLines[j], -1, j}); ++j; }
+
+    if (raw.empty()) return diff;
+
+    // Group into hunks (context=3)
+    const int CTX = 3;
+    struct HunkRange { int start; int end; };
+    std::vector<HunkRange> hunkRanges;
+    int hunkStart = -1;
+    for (int k = 0; k < (int)raw.size(); ++k) {
+        if (raw[k].kind != DiffLine::Kind::Context) {
+            int s = std::max(0, k - CTX);
+            int e = std::min((int)raw.size()-1, k + CTX);
+            if (hunkStart == -1) hunkStart = s;
+            hunkRanges.push_back({s, e});
+        }
+    }
+
+    // Merge overlapping ranges
+    std::vector<HunkRange> merged;
+    for (auto& r : hunkRanges) {
+        if (!merged.empty() && r.start <= merged.back().end + 1)
+            merged.back().end = std::max(merged.back().end, r.end);
+        else
+            merged.push_back(r);
+    }
+
+    for (auto& range : merged) {
+        DiffHunk hunk;
+        int oldStart = -1, newStart = -1, oldCount = 0, newCount = 0;
+        for (int k = range.start; k <= range.end; ++k) {
+            auto& r = raw[k];
+            if (oldStart == -1 && r.oi >= 0) oldStart = r.oi + 1;
+            if (newStart == -1 && r.ni >= 0) newStart = r.ni + 1;
+            DiffLine dl;
+            dl.kind    = r.kind;
+            dl.text    = r.text;
+            dl.oldLine = r.oi + 1;
+            dl.newLine = r.ni + 1;
+            hunk.lines.push_back(dl);
+            if (r.kind != DiffLine::Kind::Added) ++oldCount;
+            if (r.kind != DiffLine::Kind::Removed) ++newCount;
+        }
+        hunk.oldStart = oldStart > 0 ? oldStart : 1;
+        hunk.newStart = newStart > 0 ? newStart : 1;
+        hunk.oldCount = oldCount;
+        hunk.newCount = newCount;
+        diff.hunks.push_back(std::move(hunk));
+    }
+
+    return diff;
+}
+
+std::string formatDiff(const FileDiff& diff, bool color) {
+    std::ostringstream out;
+    bool c = color && Color::enabled();
+
+    auto oldHeader = "--- a/" + diff.oldPath;
+    auto newHeader = "+++ b/" + diff.newPath;
+    out << (c ? Color::apply(Color::BOLD, oldHeader) : oldHeader) << "\n";
+    out << (c ? Color::apply(Color::BOLD, newHeader) : newHeader) << "\n";
+
+    for (auto& hunk : diff.hunks) {
+        std::ostringstream hdr;
+        hdr << "@@ -" << hunk.oldStart << "," << hunk.oldCount
+            << " +" << hunk.newStart << "," << hunk.newCount << " @@";
+        auto hdrStr = hdr.str();
+        out << (c ? Color::apply(Color::CYAN, hdrStr) : hdrStr) << "\n";
+        for (auto& dl : hunk.lines) {
+            std::string prefix;
+            std::string line;
+            switch (dl.kind) {
+                case DiffLine::Kind::Added:
+                    prefix = "+";
+                    line = c ? Color::apply(Color::GREEN, "+" + dl.text) : "+" + dl.text;
+                    break;
+                case DiffLine::Kind::Removed:
+                    line = c ? Color::apply(Color::RED, "-" + dl.text) : "-" + dl.text;
+                    break;
+                case DiffLine::Kind::Context:
+                    line = " " + dl.text;
+                    break;
+            }
+            out << line << "\n";
+        }
+    }
+    return out.str();
+}
+
+} // namespace minigit

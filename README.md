@@ -1,0 +1,330 @@
+# 🔥 MiniGit — A Lightweight Version Control System
+
+A fully functional Git-like version control system built from scratch in **Modern C++20**.  
+Supports **14 commands** including init, add, commit, log, diff, branch, checkout, graph, and more.
+
+---
+
+## 📦 Build Instructions
+
+### Prerequisites
+- **CMake** 3.20+
+- **C++20** compiler (GCC 12+, MSVC 2022, or Clang 15+)
+- **OpenSSL** (for SHA-256 hashing)
+- **MSYS2 / MinGW** (on Windows with GCC)
+
+### Build Steps (Windows PowerShell)
+
+```powershell
+# 1. Configure CMake (one-time, from project root)
+cmake -B build -G Ninja
+
+# 2. Build the project
+cmake --build build
+
+# 3. The executable will be at:
+#    build\minigit.exe
+```
+
+### Build Steps (Linux / macOS)
+
+```bash
+cmake -B build
+cmake --build build
+# Executable: build/bin/minigit
+```
+
+---
+
+## 🚀 Quick Start Demo
+
+```powershell
+# Create a test folder and go into it
+mkdir C:\test_repo
+cd C:\test_repo
+
+# Initialize a new MiniGit repository
+.\minigit.exe init
+
+# Create some files
+echo "Hello World" > hello.txt
+echo "My Project" > README.md
+
+# Check status
+.\minigit.exe status
+
+# Stage all files
+.\minigit.exe add --all
+
+# Commit
+.\minigit.exe commit -m "Initial commit"
+
+# View log
+.\minigit.exe log
+
+# View graph
+.\minigit.exe graph
+```
+
+---
+
+## 📋 All 14 Commands Reference
+
+### 1. `init` — Initialize a new repository
+```powershell
+minigit init              # Init in current directory
+minigit init C:\myproject  # Init in specific path
+```
+Creates a `.minigit/` folder with objects database, refs, HEAD, and index.
+
+---
+
+### 2. `status` — Show working tree status
+```powershell
+minigit status
+```
+Shows:
+- Current branch name (or detached HEAD)
+- **Staged changes** (green) — ready to commit
+- **Unstaged changes** (red) — modified but not added
+- **Untracked files** — new files not yet tracked
+
+---
+
+### 3. `add` — Stage files for commit
+```powershell
+minigit add hello.txt         # Stage a specific file
+minigit add src/              # Stage entire directory
+minigit add --all             # Stage ALL changes (new + modified + deleted)
+```
+
+---
+
+### 4. `commit` — Record staged changes
+```powershell
+minigit commit -m "Your commit message here"
+```
+Creates a commit object with tree, parent, author, timestamp, and message.
+
+---
+
+### 5. `log` — Show commit history
+```powershell
+minigit log                   # Show all commits
+minigit log -n 5              # Show last 5 commits
+```
+Displays commit hash, author, date, and message for each commit.
+
+---
+
+### 6. `diff` — Show file differences
+```powershell
+minigit diff                  # Working tree vs index (unstaged changes)
+minigit diff --staged         # Index vs HEAD (staged changes)
+minigit diff --cached         # Same as --staged
+```
+Outputs unified diff format with line-by-line additions (+) and removals (-).
+
+---
+
+### 7. `restore` — Restore files
+```powershell
+minigit restore hello.txt             # Restore working tree file FROM index
+minigit restore --staged hello.txt    # Unstage file (restore index FROM HEAD)
+```
+
+---
+
+### 8. `reset` — Reset index and/or working tree
+```powershell
+minigit reset hello.txt       # Unstage a specific file
+minigit reset --soft          # Keep index + working tree (move HEAD only)
+minigit reset --mixed         # Reset index, keep working tree (DEFAULT)
+minigit reset --hard          # Reset EVERYTHING to HEAD (⚠️ destructive!)
+```
+
+---
+
+### 9. `branch` — List, create, or delete branches
+```powershell
+minigit branch                # List all branches (* = current)
+minigit branch feature        # Create new branch 'feature'
+minigit branch -d feature     # Delete branch 'feature'
+```
+
+---
+
+### 10. `checkout` — Switch branches
+```powershell
+minigit checkout main           # Switch to existing branch
+minigit checkout -b new-branch  # Create AND switch to new branch
+```
+Updates working tree and index to match the target branch.
+
+---
+
+### 11. `show` — Show commit details + diff
+```powershell
+minigit show                  # Show latest commit (HEAD)
+minigit show HEAD             # Same as above
+minigit show main             # Show tip of 'main' branch
+minigit show abc123ef         # Show by abbreviated hash
+```
+
+---
+
+### 12. `rm` — Remove files
+```powershell
+minigit rm hello.txt          # Remove from index AND delete from disk
+minigit rm --cached hello.txt # Remove from index only (keep file on disk)
+```
+
+---
+
+### 13. `graph` — Show ASCII commit graph
+```powershell
+minigit graph                 # Show commit graph (last 30)
+minigit graph -n 10           # Show last 10 commits
+```
+Output example:
+```
+* 8e466a89 - Update hello (Author <email> 2026-11-01T10:36:16Z)
+* 31d243ff - Initial commit (Author <email> 2026-11-01T10:36:16Z)
+```
+
+---
+
+### 14. `help` — Show help
+```powershell
+minigit help                  # General help with all commands
+minigit help add              # Help for specific command
+minigit help commit           # Help for commit command
+minigit --help                # Same as 'minigit help'
+```
+
+---
+
+## 🎬 Full Demo Script (Copy-Paste Ready)
+
+```powershell
+# ============================================
+#  MiniGit Full Demo — Run in PowerShell
+# ============================================
+
+$mg = "C:\Users\tanis\OneDrive\Desktop\MINIGITHUBPROJECT\build\minigit.exe"
+$demo = "$env:TEMP\minigit_demo"
+
+# Clean start
+if (Test-Path $demo) { Remove-Item -Recurse -Force $demo }
+New-Item -ItemType Directory -Force $demo | Out-Null
+Set-Location $demo
+
+Write-Host "===== 1. INIT =====" -ForegroundColor Cyan
+& $mg init
+
+Write-Host "`n===== 2. CREATE FILES =====" -ForegroundColor Cyan
+"Hello World" | Set-Content hello.txt
+"# My Project" | Set-Content README.md
+"console.log('hi')" | Set-Content app.js
+Write-Host "Created: hello.txt, README.md, app.js"
+
+Write-Host "`n===== 3. STATUS (untracked) =====" -ForegroundColor Cyan
+& $mg status
+
+Write-Host "`n===== 4. ADD ALL =====" -ForegroundColor Cyan
+& $mg add --all
+
+Write-Host "`n===== 5. STATUS (staged) =====" -ForegroundColor Cyan
+& $mg status
+
+Write-Host "`n===== 6. COMMIT =====" -ForegroundColor Cyan
+& $mg commit -m "Initial commit"
+
+Write-Host "`n===== 7. MODIFY + DIFF =====" -ForegroundColor Cyan
+"Hello MiniGit!" | Set-Content hello.txt
+& $mg diff
+
+Write-Host "`n===== 8. ADD + COMMIT AGAIN =====" -ForegroundColor Cyan
+& $mg add hello.txt
+& $mg commit -m "Update greeting"
+
+Write-Host "`n===== 9. LOG =====" -ForegroundColor Cyan
+& $mg log
+
+Write-Host "`n===== 10. GRAPH =====" -ForegroundColor Cyan
+& $mg graph
+
+Write-Host "`n===== 11. CREATE BRANCH =====" -ForegroundColor Cyan
+& $mg branch feature
+& $mg branch
+
+Write-Host "`n===== 12. CHECKOUT BRANCH =====" -ForegroundColor Cyan
+& $mg checkout feature
+"Feature content!" | Set-Content feature.txt
+& $mg add feature.txt
+& $mg commit -m "Add feature file"
+
+Write-Host "`n===== 13. SHOW COMMIT =====" -ForegroundColor Cyan
+& $mg show
+
+Write-Host "`n===== 14. CHECKOUT MAIN =====" -ForegroundColor Cyan
+& $mg checkout main
+& $mg status
+
+Write-Host "`n===== 15. RESTORE (undo edit) =====" -ForegroundColor Cyan
+"OOPS" | Set-Content hello.txt
+Write-Host "Before restore: $(Get-Content hello.txt)"
+& $mg restore hello.txt
+Write-Host "After restore:  $(Get-Content hello.txt)"
+
+Write-Host "`n===== 16. RESET =====" -ForegroundColor Cyan
+& $mg reset --mixed
+
+Write-Host "`n===== 17. RM =====" -ForegroundColor Cyan
+& $mg rm --cached app.js
+& $mg status
+
+Write-Host "`n===== 18. BRANCH DELETE =====" -ForegroundColor Cyan
+& $mg branch -d feature
+
+Write-Host "`n===== 19. HELP =====" -ForegroundColor Cyan
+& $mg help
+
+Write-Host "`n===== DEMO COMPLETE! =====" -ForegroundColor Green
+```
+
+---
+
+## 🏗️ Architecture
+
+```
+MINIGITHUBPROJECT/
+├── CMakeLists.txt              # Build configuration
+├── include/
+│   ├── cli/                    # CLI parsing & dispatch
+│   ├── commands/               # Command declarations
+│   ├── core/                   # Object model (Blob, Tree, Commit, Index, Refs)
+│   ├── services/               # Status, Diff, Graph engines
+│   └── utils/                  # Color, Hash, FileSystem, Config, Exceptions
+├── src/
+│   ├── main.cpp                # Entry point
+│   ├── cli/                    # CLI implementations
+│   ├── commands/               # 14 command implementations
+│   ├── core/                   # Object database layer
+│   ├── services/               # Service layer implementations
+│   └── utils/                  # Utility implementations
+└── build/minigit.exe           # Compiled executable
+```
+
+## ⚙️ How It Works
+
+- **Object Store**: Content-addressable storage using SHA-256 hashes (via OpenSSL)
+- **Index**: JSON-based staging area (`.minigit/index`)
+- **References**: Branch pointers stored in `.minigit/refs/heads/`
+- **HEAD**: Symbolic ref pointing to current branch
+- **Diff Engine**: LCS-based line diff with unified output format
+- **Serialization**: JSON (via nlohmann/json) for trees, commits, index
+
+---
+
+*Built with Modern C++20 • SHA-256 via OpenSSL • JSON via nlohmann/json*

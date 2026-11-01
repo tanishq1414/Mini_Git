@@ -1,0 +1,28 @@
+blob
+#pragma once
+#include "core/Object.h"
+#include <string>
+#include <vector>
+#include <cstdint>
+
+namespace minigit {
+
+/// Blob: stores raw file content.
+class Blob : public Object {
+public:
+    explicit Blob(std::string content);
+    explicit Blob(std::vector<uint8_t> bytes);
+
+    ObjectType type() const override { return ObjectType::Blob; }
+    std::string serialize() const override;
+
+    const std::string& content() const { return m_content; }
+
+    /// Deserialize from stored format (inverse of serialize).
+    static Blob deserialize(const std::string& data);
+
+private:
+    std::string m_content;
+};
+
+} // namespace minigit

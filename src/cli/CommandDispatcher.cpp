@@ -1,0 +1,47 @@
+#include "cli/Help.h"
+#include "cli/CommandDispatcher.h"
+#include "commands/Commands.h"
+#include "utils/Color.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+#include <unordered_map>
+#include <functional>
+
+namespace minigit {
+
+int dispatchCommand(const ParsedArgs& args) {
+    if (args.command.empty() || args.help) {
+        printGeneralHelp();
+        return 0;
+    }
+    using CmdFn = std::function<int(const ParsedArgs&)>;
+    std::unordered_map<std::string, CmdFn> commands = {
+        {"init",     cmd_init},
+        {"status",   cmd_status},
+        {"add",      cmd_add},
+        {"commit",   cmd_commit},
+        {"log",      cmd_log},
+        {"diff",     cmd_diff},
+        {"restore",  cmd_restore},
+        {"reset",    cmd_reset},
+        {"branch",   cmd_branch},
+        {"checkout", cmd_checkout},
+        {"show",     cmd_show},
+        {"rm",       cmd_rm},
+        {"graph",    cmd_graph},
+        {"help",     [](const ParsedArgs& a) -> int {
+            if (!a.positional.empty()) printCommandHelp(a.positional[0]);
+            else printGeneralHelp();
+            return 0;
+        }},
+    };
+    auto it = commands.find(args.command);
+    if (it == commands.end()) {
+        std::cerr << Color::boldRed("error: ") << "unknown command '" << args.command << "'\n";
+        printGeneralHelp();
+        return 1;
+    }
+    return it->second(args);
+}
+
+} // namespace minigit

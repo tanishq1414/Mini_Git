@@ -1,0 +1,48 @@
+blob
+#pragma once
+#include <string>
+#include <string_view>
+#include <stdexcept>
+
+namespace minigit {
+
+/// Object types in the MiniGit object database.
+enum class ObjectType {
+    Blob,
+    Tree,
+    Commit
+};
+
+/// Returns string name of an object type.
+inline std::string objectTypeName(ObjectType t) {
+    switch (t) {
+        case ObjectType::Blob:   return "blob";
+        case ObjectType::Tree:   return "tree";
+        case ObjectType::Commit: return "commit";
+    }
+    return "unknown";
+}
+
+inline ObjectType objectTypeFromName(std::string_view name) {
+    if (name == "blob")   return ObjectType::Blob;
+    if (name == "tree")   return ObjectType::Tree;
+    if (name == "commit") return ObjectType::Commit;
+    throw std::invalid_argument("unknown object type: " + std::string(name));
+}
+
+/// Abstract base for all stored objects.
+class Object {
+public:
+    virtual ~Object() = default;
+
+    /// Returns the serialized representation (used for hashing and storage).
+    virtual std::string serialize() const = 0;
+
+    /// Returns the object type.
+    virtual ObjectType type() const = 0;
+
+    /// Compute and return SHA-256 hash of serialized content.
+    std::string hash() const;
+};
+
+} // namespace minigit

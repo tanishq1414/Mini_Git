@@ -1,0 +1,45 @@
+#include "utils/Color.h"
+#include <iostream>
+
+#ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#endif
+
+namespace minigit {
+
+bool Color::s_enabled = true;
+
+void Color::init() {
+#ifdef _WIN32
+    HANDLE hOut = GetStdHandle(STD_OUTPUT_HANDLE);
+    if (hOut == INVALID_HANDLE_VALUE) {
+        s_enabled = false;
+        return;
+    }
+    DWORD dwMode = 0;
+    if (!GetConsoleMode(hOut, &dwMode)) {
+        s_enabled = false;
+        return;
+    }
+    dwMode |= ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+    if (!SetConsoleMode(hOut, dwMode)) {
+        s_enabled = false;
+    }
+#endif
+}
+
+void Color::disable() noexcept {
+    s_enabled = false;
+}
+
+bool Color::enabled() noexcept {
+    return s_enabled;
+}
+
+std::string Color::apply(std::string_view code, std::string_view text) {
+    if (!s_enabled) return std::string(text);
+    return std::string(code) + std::string(text) + std::string(RESET);
+}
+
+} // namespace minigit

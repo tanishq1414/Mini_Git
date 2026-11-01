@@ -1,0 +1,40 @@
+blob
+#include "cli/CLIParser.h"
+#include <stdexcept>
+
+namespace minigit {
+
+ParsedArgs CLIParser::parse(int argc, char* argv[]) {
+    ParsedArgs result;
+    // argv[0] = program name, argv[1] = command (maybe)
+    bool commandDone = false;
+    for (int i = 1; i < argc; ++i) {
+        std::string arg(argv[i]);
+        if (arg.starts_with("--")) {
+            auto key = arg.substr(2);
+            auto eq  = key.find('=');
+            if (eq != std::string::npos) {
+                result.options[key.substr(0, eq)] = key.substr(eq + 1);
+            } else {
+                if (key == "no-color") result.noColor = true;
+                else if (key == "help") result.help = true;
+                else result.options[key] = "true";
+            }
+        } else if (arg.starts_with("-") && arg.size() == 2) {
+            // short flags like -m require a value
+            if (i + 1 < argc) {
+                result.options[arg.substr(1)] = argv[++i];
+            } else {
+                result.options[arg.substr(1)] = "true";
+            }
+        } else if (!commandDone) {
+            result.command = arg;
+            commandDone = true;
+        } else {
+            result.positional.push_back(arg);
+        }
+    }
+    return result;
+}
+
+} // namespace minigit

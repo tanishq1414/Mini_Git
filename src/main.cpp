@@ -1,0 +1,21 @@
+#include "cli/CLIParser.h"
+#include "cli/CommandDispatcher.h"
+#include "utils/Color.h"
+#include <iostream>
+
+int main(int argc, char* argv[]) {
+    // Initialize color support (enables VT processing on Windows)
+    minigit::Color::init();
+
+    auto args = minigit::CLIParser::parse(argc, argv);
+
+    if (args.noColor)
+        minigit::Color::disable();
+
+    try {
+        return minigit::dispatchCommand(args);
+    } catch (const std::exception& e) {
+        std::cerr << minigit::Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}

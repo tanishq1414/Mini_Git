@@ -1,0 +1,38 @@
+#pragma once
+#include "core/Object.h"
+#include <string>
+#include <vector>
+
+namespace minigit {
+
+/// A single entry in a Tree (file or subdirectory).
+struct TreeEntry {
+    std::string name;   ///< File or directory name (not full path)
+    std::string hash;   ///< SHA-256 of the referenced object
+    ObjectType  type;   ///< Blob or Tree
+    int         mode;   ///< Unix-like mode (100644 for file, 040000 for dir)
+};
+
+/// Tree: stores directory structure.
+class Tree : public Object {
+public:
+    Tree() = default;
+    explicit Tree(std::vector<TreeEntry> entries);
+
+    ObjectType type() const override { return ObjectType::Tree; }
+    std::string serialize() const override;
+
+    const std::vector<TreeEntry>& entries() const { return m_entries; }
+    void addEntry(TreeEntry entry);
+
+    /// Deserialize from stored format.
+    static Tree deserialize(const std::string& data);
+
+    /// Find entry by name. Returns nullptr if not found.
+    const TreeEntry* findEntry(const std::string& name) const;
+
+private:
+    std::vector<TreeEntry> m_entries;
+};
+
+} // namespace minigit

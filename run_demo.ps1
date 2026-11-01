@@ -1,0 +1,108 @@
+## ══════════════════════════════════════════════════════════════
+##  MiniGit — Full Project Demo (Single Script)
+## ══════════════════════════════════════════════════════════════
+
+$mg   = "$PSScriptRoot\build\minigit.exe"
+$demo = "$env:TEMP\minigit_demo_run"
+
+# Clean previous demo
+if (Test-Path $demo) { Remove-Item -Recurse -Force $demo }
+New-Item -ItemType Directory -Force $demo | Out-Null
+Set-Location $demo
+
+function Header($text) {
+    Write-Host ""
+    Write-Host "  $text" -ForegroundColor Black -BackgroundColor Cyan
+    Write-Host ""
+}
+
+# ── 1. INIT ──────────────────────────────────────────────────
+Header "1. minigit init"
+& $mg init
+
+# ── 2. CREATE FILES ──────────────────────────────────────────
+Header "2. Creating files..."
+"Hello World!"       | Set-Content hello.txt
+"# My Project"       | Set-Content README.md
+"print('hi')"        | Set-Content app.py
+Write-Host "  Created: hello.txt, README.md, app.py"
+
+# ── 3. STATUS ────────────────────────────────────────────────
+Header "3. minigit status"
+& $mg status
+
+# ── 4. ADD ALL ───────────────────────────────────────────────
+Header "4. minigit add --all"
+& $mg add --all
+
+# ── 5. COMMIT ────────────────────────────────────────────────
+Header "5. minigit commit -m 'Initial commit'"
+& $mg commit -m "Initial commit"
+
+# ── 6. MODIFY + DIFF ────────────────────────────────────────
+Header "6. minigit diff  (after editing hello.txt)"
+"Hello MiniGit!" | Set-Content hello.txt
+& $mg diff
+
+# ── 7. ADD + COMMIT AGAIN ───────────────────────────────────
+Header "7. minigit add + commit (second commit)"
+& $mg add hello.txt
+& $mg commit -m "Update greeting"
+
+# ── 8. LOG ───────────────────────────────────────────────────
+Header "8. minigit log"
+& $mg log
+
+# ── 9. GRAPH ─────────────────────────────────────────────────
+Header "9. minigit graph"
+& $mg graph
+
+# ── 10. BRANCH ───────────────────────────────────────────────
+Header "10. minigit branch feature + list"
+& $mg branch feature
+& $mg branch
+
+# ── 11. CHECKOUT + COMMIT ON BRANCH ─────────────────────────
+Header "11. minigit checkout feature + commit"
+& $mg checkout feature
+"New feature code" | Set-Content feature.txt
+& $mg add feature.txt
+& $mg commit -m "Add feature file"
+
+# ── 12. SHOW ─────────────────────────────────────────────────
+Header "12. minigit show"
+& $mg show
+
+# ── 13. CHECKOUT MAIN ───────────────────────────────────────
+Header "13. minigit checkout main"
+& $mg checkout main
+
+# ── 14. RESTORE ──────────────────────────────────────────────
+Header "14. minigit restore  (undo accidental edit)"
+"OOPS I BROKE IT" | Set-Content hello.txt
+Write-Host "  Before restore: $(Get-Content hello.txt)"
+& $mg restore hello.txt
+Write-Host "  After restore:  $(Get-Content hello.txt)"
+
+# ── 15. RESET ────────────────────────────────────────────────
+Header "15. minigit reset --mixed"
+& $mg reset --mixed
+
+# ── 16. RM ───────────────────────────────────────────────────
+Header "16. minigit rm --cached app.py"
+& $mg rm --cached app.py
+
+# ── 17. BRANCH DELETE ────────────────────────────────────────
+Header "17. minigit branch -d feature"
+& $mg branch -d feature
+
+# ── 18. HELP ─────────────────────────────────────────────────
+Header "18. minigit help"
+& $mg help
+
+# ── DONE ─────────────────────────────────────────────────────
+Write-Host ""
+Write-Host "  ============================================" -ForegroundColor Green
+Write-Host "   ALL 14 COMMANDS DEMONSTRATED SUCCESSFULLY! " -ForegroundColor Green
+Write-Host "  ============================================" -ForegroundColor Green
+Write-Host ""

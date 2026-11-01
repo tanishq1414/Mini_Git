@@ -1,0 +1,27 @@
+blob
+#include "commands/Commands.h"
+#include "core/Repository.h"
+#include "utils/Color.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+#include <filesystem>
+
+// ─── init ────────────────────────────────────────────────────────────────────
+namespace minigit {
+
+int cmd_init(const ParsedArgs& args) {
+    auto path = args.positional.empty()
+        ? std::filesystem::current_path()
+        : std::filesystem::path(args.positional[0]);
+    try {
+        auto repo = Repository::init(path);
+        std::cout << Color::boldGreen("Initialized empty MiniGit repository in ")
+                  << Color::bold((repo.minigitDir()).string()) << "\n";
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("error: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

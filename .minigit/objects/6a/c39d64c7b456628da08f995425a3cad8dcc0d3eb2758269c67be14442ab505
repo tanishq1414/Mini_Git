@@ -1,0 +1,89 @@
+blob
+#include "commands/Commands.h"
+#include "core/Repository.h"
+#include "services/StatusService.h"
+#include "utils/Color.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+
+namespace minigit {
+
+int cmd_status(const ParsedArgs&) {
+    try {
+        auto repo   = Repository::open();
+        auto status = StatusService::compute(repo);
+
+        // Branch info
+        if (status.detached) {
+            std::cout << Color::bold("HEAD detached at ")
+                      << Color::boldCyan(repo.refs().resolveHead().substr(0,8)) << "\n";
+        } else {
+            std::cout << Color::bold("On branch ")
+                      << Color::boldCyan(status.currentBranch) << "\n";
+        }
+        if (!status.hasCommits)
+            std::cout << Color::yellow("No commits yet\n");
+
+        bool anyStagedChanges = false;
+        bool anyUnstagedChanges = false;
+        bool anyUntracked = false;
+
+        for (auto& e : status.entries) {
+            if (e.stagingArea != FileStatus::Unmodified) anyStagedChanges = true;
+            if (e.workingTree == FileStatus::Modified ||
+                e.workingTree == FileStatus::Deleted) anyUnstagedChanges = true;
+            if (e.workingTree == FileStatus::Untracked) anyUntracked = true;
+        }
+
+        if (anyStagedChanges) {
+            std::cout << "\n" << Color::bold("Changes to be committed:") << "\n";
+            std::cout << Color::gray("  (use \"minigit reset <file>\" to unstage)\n\n");
+            for (auto& e : status.entries) {
+                if (e.stagingArea == FileStatus::Unmodified) continue;
+                std::string label;
+                switch (e.stagingArea) {
+                    case FileStatus::Staged:   label = "new file:"; break;
+                    case FileStatus::Modified: label = "modified:"; break;
+                    case FileStatus::Deleted:  label = "deleted:";  break;
+                    default: continue;
+                }
+                std::cout << "    " << Color::boldGreen(label) << " " << e.path << "\n";
+            }
+        }
+
+        if (anyUnstagedChanges) {
+            std::cout << "\n" << Color::bold("Changes not staged for commit:") << "\n";
+            std::cout << Color::gray("  (use \"minigit add <file>\" to stage)\n\n");
+            for (auto& e : status.entries) {
+                if (e.workingTree == FileStatus::Unmodified ||
+                    e.workingTree == FileStatus::Untracked) continue;
+                std::string label;
+                switch (e.workingTree) {
+                    case FileStatus::Modified: label = "modified:"; break;
+                    case FileStatus::Deleted:  label = "deleted:";  break;
+                    default: continue;
+                }
+                std::cout << "    " << Color::boldRed(label) << " " << e.path << "\n";
+            }
+        }
+
+        if (anyUntracked) {
+            std::cout << "\n" << Color::bold("Untracked files:") << "\n";
+            std::cout << Color::gray("  (use \"minigit add <file>\" to include)\n\n");
+            for (auto& e : status.entries) {
+                if (e.workingTree != FileStatus::Untracked) continue;
+                std::cout << "    " << Color::red(e.path) << "\n";
+            }
+        }
+
+        if (!anyStagedChanges && !anyUnstagedChanges && !anyUntracked)
+            std::cout << Color::gray("\nnothing to commit, working tree clean\n");
+
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

@@ -1,0 +1,22 @@
+#include "commands/Commands.h"
+#include "services/GraphService.h"
+#include "utils/Color.h"
+#include "utils/Exceptions.h"
+#include <iostream>
+
+namespace minigit {
+
+int cmd_graph(const ParsedArgs& args) {
+    try {
+        auto repo = Repository::open();
+        int limit = 30;
+        if (args.options.count("n")) limit = std::stoi(args.options.at("n"));
+        std::cout << renderGraph(repo, limit);
+        return 0;
+    } catch (const MiniGitException& e) {
+        std::cerr << Color::boldRed("fatal: ") << e.what() << "\n";
+        return 1;
+    }
+}
+
+} // namespace minigit

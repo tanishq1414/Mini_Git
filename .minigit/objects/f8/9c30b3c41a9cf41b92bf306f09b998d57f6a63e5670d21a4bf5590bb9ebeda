@@ -1,0 +1,57 @@
+blob
+#pragma once
+#include <filesystem>
+#include <string>
+#include <memory>
+#include <variant>
+#include "core/Blob.h"
+#include "core/Tree.h"
+#include "core/Commit.h"
+
+namespace minigit {
+
+using AnyObject = std::variant<Blob, Tree, Commit>;
+
+/// Content-addressable object database.
+/// Objects are stored in .minigit/objects/<2-char>/<62-char> files.
+class ObjectStore {
+public:
+    explicit ObjectStore(const std::filesystem::path& objectsDir);
+
+    /// Store an object and return its SHA-256 hash.
+    std::string store(const Object& obj);
+
+    /// Store raw serialized bytes and return hash. Used for re-storing.
+    std::string storeRaw(const std::string& serialized, ObjectType t);
+
+    /// Check whether an object with the given hash exists.
+    bool exists(const std::string& hash) const;
+
+    /// Load object by hash. Throws ObjectNotFoundException or ObjectCorruptedException.
+    AnyObject load(const std::string& hash) const;
+
+    /// Load blob by hash (throws if wrong type).
+    Blob loadBlob(const std::string& hash) const;
+
+    /// Load tree by hash (throws if wrong type).
+    Tree loadTree(const std::string& hash) const;
+
+    /// Load commit by hash (throws if wrong type).
+    Commit loadCommit(const std::string& hash) const;
+
+    /// Resolve abbreviated hash (prefix) to full hash.
+    /// Returns empty string if not found, throws if ambiguous.
+    std::string resolveAbbrev(const std::string& prefix) const;
+
+    const std::filesystem::path& objectsDir() const { return m_dir; }
+
+private:
+    std::filesystem::path m_dir;
+    std::filesystem::path objectPath(const std::string& hash) const;
+
+    /// Pack format: "<type>\n<content>"
+    std::string pack(ObjectType t, const std::string& content) const;
+    std::pair<ObjectType, std::string> unpack(const std::string& raw) const;
+};
+
+} // namespace minigit
