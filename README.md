@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🔥 MiniGit — A Lightweight Version Control System
 
 A fully functional Git-like version control system built from scratch in **Modern C++20**.  
@@ -328,3 +329,7 @@ MINIGITHUBPROJECT/
 ---
 
 *Built with Modern C++20 • SHA-256 via OpenSSL • JSON via nlohmann/json*
+=======
+# Mini_Git
+MiniGit is a C++20-based version control system featuring file tracking, commits, branching, restoration, and commit graph visualization. It uses SHA-256 hashing and OOP. GitHub: Mini_GitHub_project_using_c++
+>>>>>>> d715b68590c5929e7c4f0d67f23110a28e467898
